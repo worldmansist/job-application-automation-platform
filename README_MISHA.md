@@ -1,78 +1,157 @@
-# Этап 0: настройка и запуск проекта
+# Руководство по запуску проекта
 
-## Что сделано на этапе 0
+## Предварительные требования
 
-- настроено виртуальное окружение Python;
-- установлены зависимости;
-- добавлены FastAPI backend и Telegram-бот;
-- настроены переменные окружения;
-- проверен запуск API и бота.
+- Python 3.8 или выше
+- pip (обычно поставляется с Python)
 
-## Создание среды
+## Шаг 1: Создание и активация виртуального окружения
 
-Выполнять из корневой папки проекта в PowerShell:
+### На Windows:
+
+Если виртуальное окружение еще не создано, выполните в PowerShell:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Если PowerShell блокирует активацию:
+Если окружение уже создано, выполните только команду активации:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Если получаете ошибку политики выполнения (`ExecutionPolicy`), используйте:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-После активации в начале строки терминала появится `(.venv)`.
+Или используйте Command Prompt вместо PowerShell.
 
-## Установка зависимостей
+### На macOS/Linux:
 
-```powershell
+```bash
+source .venv/bin/activate
+```
+
+Если виртуальное окружение еще не создано, создайте его:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+## Шаг 2: Установка зависимостей
+
+После активации виртуального окружения выполните:
+
+```bash
 pip install -r requirements.txt
 ```
 
-## Настройка `.env`
+## Шаг 3: Настройка переменных окружения
 
-Создай файл `.env` в корне проекта:
+Создайте файл `.env` в корне проекта и добавьте токен Telegram:
 
 ```env
-APP_NAME="Job Application Automation Platform"
-ENVIRONMENT="development"
-TELEGRAM_BOT_TOKEN="токен_от_BotFather"
+TELEGRAM_BOT_TOKEN=your_token_here
+API_BASE_URL=http://127.0.0.1:8000
 ```
 
-Файл `.env` нельзя добавлять в GitHub.
+## Шаг 4: Запуск приложения и бота
 
-## Запуск FastAPI
+В проекте нужно запускать два процесса в разных терминалах.
 
-В первом терминале:
+### Терминал 1: FastAPI
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload
 ```
 
-API и документация:
+Приложение будет доступно по адресу: **http://localhost:8000**
 
-- http://localhost:8000
-- http://localhost:8000/docs
-
-## Запуск Telegram-бота
-
-Во втором терминале:
+### Терминал 2: Telegram Bot
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m app.bot.main
 ```
 
-После запуска отправь боту в Telegram команду `/start`.
+### Опции запуска:
 
-Не запускай два экземпляра одного бота одновременно: Telegram выдаст ошибку `Conflict`.
+- `--reload` — автоматическая перезагрузка при изменении файлов (для разработки)
+- `--host 0.0.0.0` — доступно из других компьютеров в сети
+- `--port 8080` — использовать другой порт вместо 8000
 
-## Проверка проекта
+Пример запуска API на другом порту:
 
 ```powershell
-.\.venv\Scripts\python.exe -m compileall app
-.\.venv\Scripts\python.exe -c "import app.bot.main; print('BOT_MODULE_OK')"
+uvicorn app.main:app --reload --port 8080
+```
+
+## Документация API
+
+После запуска приложения вы можете просмотреть документацию API:
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+## Деактивация виртуального окружения
+
+Когда закончите работу, деактивируйте окружение:
+
+```bash
+deactivate
+```
+
+## Полная последовательность команд для быстрого старта
+
+### Windows:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Создайте файл `.env`:
+
+```env
+TELEGRAM_BOT_TOKEN=your_token_here
+API_BASE_URL=http://127.0.0.1:8000
+```
+
+Запуск в двух терминалах:
+
+```powershell
+# Терминал 1
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
+```
+
+```powershell
+# Терминал 2
+.\.venv\Scripts\Activate.ps1
+python -m app.bot.main
+```
+
+### macOS/Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+```bash
+# Терминал 1
+uvicorn app.main:app --reload
+```
+
+```bash
+# Терминал 2
+python -m app.bot.main
 ```
