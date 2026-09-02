@@ -31,6 +31,8 @@ async def create_application(payload: ApplicationCreate):
         "id": new_id,
         "company": payload.company,
         "position": payload.position,
+        "url": payload.url,
+        "description": payload.description,
         "status": payload.status,
         "source": payload.source,
         "created_at": now,

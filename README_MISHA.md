@@ -1,183 +1,78 @@
-# Настройка Python-окружения в проекте
+# Этап 0: настройка и запуск проекта
 
-## 1. Создание папки проекта
+## Что сделано на этапе 0
 
-В PowerShell открыл терминал и создал папку проекта:
+- настроено виртуальное окружение Python;
+- установлены зависимости;
+- добавлены FastAPI backend и Telegram-бот;
+- настроены переменные окружения;
+- проверен запуск API и бота.
 
-```powershell
-mkdir Project
-```
+## Создание среды
 
-Затем перешёл в эту папку:
-
-```powershell
-cd Project
-```
-
-## 2. Создание файлов проекта
-
-Создал файл README:
-
-```powershell
-New-Item README.md
-```
-
-Также создал основной файл проекта, например:
-
-```powershell
-New-Item app.py
-```
-
-Если нужен был ещё один файл, например для зависимостей, то создавал так:
-
-```powershell
-New-Item requirements.txt
-```
-
-После этого открыл папку проекта в VS Code и начал настройку Python.
-
-## 3. Выбор интерпретатора
-
-Сначала я открыл VS Code и выбрал интерпретатор через горячие клавиши:
-
-- `Ctrl + Shift + P`
-- `Python: Select Interpreter`
-
-После этого окружение не появилось автоматически, поэтому я создал его вручную.
-
-## 4. Создание виртуального окружения
-
-В корне проекта выполнил команду:
+Выполнять из корневой папки проекта в PowerShell:
 
 ```powershell
 python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-Эта команда создала папку `.venv` с локальной средой Python.
-
-## 5. Разблокировка запуска сценариев в PowerShell
-
-Так как PowerShell блокировал запуск скриптов, я выполнил:
+Если PowerShell блокирует активацию:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-Это разрешило запуск активационного скрипта только для текущей сессии терминала.
+После активации в начале строки терминала появится `(.venv)`.
 
-## 6. Активация окружения
+## Установка зависимостей
 
-После этого активировал среду командой:
+```powershell
+pip install -r requirements.txt
+```
+
+## Настройка `.env`
+
+Создай файл `.env` в корне проекта:
+
+```env
+APP_NAME="Job Application Automation Platform"
+ENVIRONMENT="development"
+TELEGRAM_BOT_TOKEN="токен_от_BotFather"
+```
+
+Файл `.env` нельзя добавлять в GitHub.
+
+## Запуск FastAPI
+
+В первом терминале:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
 ```
 
-После активации в терминале появилось подтверждение вида:
+API и документация:
+
+- http://localhost:8000
+- http://localhost:8000/docs
+
+## Запуск Telegram-бота
+
+Во втором терминале:
 
 ```powershell
-(.venv)
+.\.venv\Scripts\Activate.ps1
+python -m app.bot.main
 ```
 
-Это означает, что виртуальная среда успешно активирована.
+После запуска отправь боту в Telegram команду `/start`.
 
-## 7. Проверка работы Python
+Не запускай два экземпляра одного бота одновременно: Telegram выдаст ошибку `Conflict`.
 
-Проверил, что Python работает из активированного окружения:
+## Проверка проекта
 
 ```powershell
-python --version
+.\.venv\Scripts\python.exe -m compileall app
+.\.venv\Scripts\python.exe -c "import app.bot.main; print('BOT_MODULE_OK')"
 ```
-
-При необходимости можно обновить `pip`:
-
-```powershell
-python -m pip install --upgrade pip
-```
-
-## Итог
-
-Теперь проект работает в изолированной Python-среде, и все зависимости можно устанавливать локально без влияния на глобальную систему.
-
-## Этап 0: что уже сделано в проекте
-
-После настройки окружения мы начали первый рабочий этап проекта.
-
-### 1. Создан базовый каркас приложения
-
-Сформировали структуру проекта:
-
-```text
-Project/
-├── app/
-│   ├── api/
-│   │   └── routes/
-│   │       └── health.py
-│   ├── core/
-│   │   └── config.py
-│   └── main.py
-├── .env.example
-├── requirements.txt
-├── README_MISHA.md
-└── PLAN_PROEKT.md
-```
-
-### 2. Настроен FastAPI
-
-Создали базовое приложение в файле:
-
-```python
-from fastapi import FastAPI
-
-app = FastAPI(title="Job Application Automation Platform")
-```
-
-### 3. Добавлен health-check endpoint
-
-В маршруте `/health` добавили проверку статуса сервиса:
-
-```python
-@router.get("/health")
-async def health_check():
-    return {
-        "status": "ok",
-        "service": "job-app-platform",
-    }
-```
-
-### 4. Добавлены настройки проекта
-
-Создали файл конфигурации с переменными окружения:
-
-```python
-class Settings(BaseSettings):
-    app_name: str = "Job Application Automation Platform"
-    environment: str = "development"
-```
-
-### 5. Установлены зависимости
-
-В `requirements.txt` добавлены минимальные пакеты:
-
-```text
-fastapi==0.115.0
-uvicorn[standard]==0.30.1
-pydantic-settings==2.3.4
-```
-
-### 6. Проверка запуска
-
-Запустили приложение командой:
-
-```powershell
-python -m uvicorn app.main:app --reload
-```
-
-Сервер успешно запустился и показал:
-
-```text
-Uvicorn running on http://127.0.0.1:8000
-Application startup complete.
-```
-
-Это означает, что этап 0 закрыт: базовый проект запущен и готов к дальнейшему развитию.
