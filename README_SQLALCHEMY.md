@@ -1,75 +1,75 @@
-# SQLAlchemy в проекте
+# SQLAlchemy in the Project
 
-## 1. Что такое SQLAlchemy
+## 1. What Is SQLAlchemy
 
-SQLAlchemy — библиотека для работы Python-приложения с реляционными базами данных.
+SQLAlchemy is a library for connecting a Python application to relational databases.
 
-В проекте она связывает:
+In this project, it connects:
 
 ```text
-Python-класс Application
+Python Application class
         ↕
-таблица applications в SQLite
+applications table in SQLite
 ```
 
-Этот подход называется ORM: Object-Relational Mapping.
+This approach is called ORM: Object-Relational Mapping.
 
-ORM позволяет работать с таблицами через Python-объекты, а SQLAlchemy самостоятельно формирует SQL-запросы.
+ORM lets us work with tables through Python objects, while SQLAlchemy generates SQL queries automatically.
 
-## 2. Какие объекты используются
+## 2. Objects Used
 
-В проекте есть основные объекты:
+The project has these main objects:
 
 ```text
-engine       подключение к базе
-Base         общий класс моделей
-Application  модель таблицы applications
-Session      рабочая сессия с базой
-sessionmaker фабрика сессий
-select       построитель SELECT-запросов
+engine       database connection
+Base         common model class
+Application  applications table model
+Session      working database session
+sessionmaker session factory
+select       SELECT query builder
 ```
 
-## 3. Установка
+## 3. Installation
 
-В `requirements.txt` добавлена зависимость:
+The dependency was added to `requirements.txt`:
 
 ```text
 sqlalchemy==2.0.36
 ```
 
-Установка:
+Installation:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-## 4. URL базы данных
+## 4. Database URL
 
-В `app/core/config.py`:
+In `app/core/config.py`:
 
 ```python
 database_url: str = "sqlite:///./app.db"
 ```
 
-SQLAlchemy использует этот адрес для создания подключения.
+SQLAlchemy uses this address to create the connection.
 
-Разбор:
+Breakdown:
 
-- `sqlite` — диалект базы;
-- `./app.db` — путь к файлу;
-- `app.db` — файл SQLite в корне проекта.
+- `sqlite` — the database dialect;
+- `./app.db` — the file path;
+- `app.db` — the SQLite file in the project root.
 
-Другие базы используют другие URL. Например, PostgreSQL:
+Other databases use different URLs. For example, PostgreSQL:
 
 ```text
 postgresql+psycopg://user:password@localhost:5432/job_applications
 ```
 
-При смене базы обычно меняются URL и драйвер, а модели и CRUD-код сохраняются.
+When changing databases, the URL and driver usually change, while the models and CRUD code remain.
 
 ## 5. `create_engine`
 
-В `app/db/database.py` создаётся engine:
+The engine is created in `app/db/database.py`:
 
 ```python
 engine = create_engine(
@@ -78,18 +78,18 @@ engine = create_engine(
 )
 ```
 
-`engine` — объект, который знает:
+`engine` is an object that knows:
 
-- тип базы;
-- адрес базы;
-- способ создания подключений;
-- настройки взаимодействия с драйвером.
+- the database type;
+- the database address;
+- how to create connections;
+- driver interaction settings.
 
-`engine` не выполняет бизнес-логику заявок. Он предоставляет технический доступ к базе.
+`engine` does not perform application business logic. It provides technical access to the database.
 
 ## 6. `connect_args`
 
-Для SQLite используется:
+For SQLite, use:
 
 ```python
 connect_args = (
@@ -99,11 +99,11 @@ connect_args = (
 )
 ```
 
-SQLite по умолчанию ограничивает использование одного соединения одним потоком. Веб-приложение может обрабатывать запросы в разных потоках, поэтому ограничение отключается.
+SQLite normally restricts one connection to one thread. A web application can process requests in different threads, so this restriction is disabled.
 
-Для PostgreSQL этот параметр обычно не нужен.
+This parameter is usually not needed for PostgreSQL.
 
-## 7. `DeclarativeBase` и `Base`
+## 7. `DeclarativeBase` and `Base`
 
 ```python
 from sqlalchemy.orm import DeclarativeBase
@@ -113,43 +113,43 @@ class Base(DeclarativeBase):
     pass
 ```
 
-`Base` — общий базовый класс для ORM-моделей.
+`Base` is the common base class for ORM models.
 
-Модель таблицы наследуется от него:
+The table model inherits from it:
 
 ```python
 class Application(Base):
     ...
 ```
 
-SQLAlchemy регистрирует такую модель в:
+SQLAlchemy registers this model in:
 
 ```python
 Base.metadata
 ```
 
-`metadata` содержит описание таблиц, колонок, типов и ограничений. Самих заявок там нет.
+`metadata` contains descriptions of tables, columns, types, and constraints. It does not contain the applications themselves.
 
-## 8. Модель SQLAlchemy — Python-класс, связанный с таблицей базы
+## 8. SQLAlchemy Model — a Python Class Connected to a Database Table
 
-В `app/db/models.py`:
+In `app/db/models.py`:
 
 ```python
 class Application(Base):
     __tablename__ = "applications"
 ```
 
-`__tablename__` задаёт имя таблицы. `Base` связывает этот класс с SQLAlchemy ORM.
+`__tablename__` sets the table name. `Base` connects this class to the SQLAlchemy ORM.
 
-### Колонка `id`: `Mapped` — тип Python, `mapped_column` — описание колонки
+### `id` Column: `Mapped` Is the Python Type, `mapped_column` Describes the Column
 
 ```python
 id: Mapped[int] = mapped_column(primary_key=True)
 ```
 
-`Mapped[int]` означает, что в Python поле является целым числом. `mapped_column(...)` описывает, как поле хранится в базе. `primary_key=True` делает `id` первичным ключом, который идентифицирует заявку.
+`Mapped[int]` means that the field is an integer in Python. `mapped_column(...)` describes how the field is stored in the database. `primary_key=True` makes `id` the primary key that identifies the application.
 
-### Строковые колонки: `String` — ограниченная строка
+### String Columns: `String` Is a Length-Limited String
 
 ```python
 company: Mapped[str] = mapped_column(String(255))
@@ -157,17 +157,17 @@ position: Mapped[str] = mapped_column(String(255))
 url: Mapped[str] = mapped_column(String(2048))
 ```
 
-`Mapped[str]` сообщает Python-тип, `mapped_column` связывает атрибут с колонкой, а `String(255)` ограничивает строку длиной до 255 символов. Для URL используется `String(2048)`.
+`Mapped[str]` provides the Python type, `mapped_column` connects the attribute to the column, and `String(255)` limits the string to 255 characters. `String(2048)` is used for the URL.
 
-### Длинный текст: `Text` — строка без короткого ограничения длины
+### Long Text: `Text` Is a String Without a Short Length Limit
 
 ```python
 description: Mapped[str] = mapped_column(Text)
 ```
 
-`Text` используется для описаний, длина которых заранее неизвестна. В отличие от `String(255)`, здесь не задаётся короткий лимит длины.
+`Text` is used for descriptions whose length is not known in advance. Unlike `String(255)`, it does not set a short length limit.
 
-### Значения по умолчанию
+### Default Values
 
 ```python
 status: Mapped[str] = mapped_column(
@@ -176,7 +176,7 @@ status: Mapped[str] = mapped_column(
 )
 ```
 
-Если статус не передан, ORM использует `new`.
+If no status is provided, the ORM uses `new`.
 
 ```python
 source: Mapped[str] = mapped_column(
@@ -185,9 +185,9 @@ source: Mapped[str] = mapped_column(
 )
 ```
 
-Источник по умолчанию — `telegram`.
+The default source is `telegram`.
 
-### Даты: `DateTime` — дата и время, `func.now()` — текущее время базы
+### Dates: `DateTime` Is the Date and Time, `func.now()` Is the Database's Current Time
 
 ```python
 created_at: Mapped[datetime] = mapped_column(
@@ -196,7 +196,7 @@ created_at: Mapped[datetime] = mapped_column(
 )
 ```
 
-`DateTime(timezone=True)` хранит дату и время с поддержкой часового пояса. `server_default=func.now()` означает, что текущее время устанавливает сама база данных при создании записи.
+`DateTime(timezone=True)` stores the date and time with time-zone support. `server_default=func.now()` means the database itself sets the current time when creating the record.
 
 ```python
 updated_at: Mapped[datetime] = mapped_column(
@@ -206,11 +206,11 @@ updated_at: Mapped[datetime] = mapped_column(
 )
 ```
 
-`onupdate=func.now()` задаёт обновление времени при изменении записи. `func.now()` — SQLAlchemy-представление SQL-функции текущего времени.
+`onupdate=func.now()` updates the time when the record changes. `func.now()` is SQLAlchemy's representation of the SQL current-time function.
 
 ## 9. `Base.metadata.create_all`
 
-В `database.py`:
+In `database.py`:
 
 ```python
 def init_db() -> None:
@@ -219,14 +219,14 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 ```
 
-Что происходит:
+What happens:
 
-1. импортируется модель `Application`;
-2. модель регистрируется в `Base.metadata`;
-3. SQLAlchemy проверяет существующие таблицы;
-4. отсутствующая таблица `applications` создаётся.
+1. the `Application` model is imported;
+2. the model is registered in `Base.metadata`;
+3. SQLAlchemy checks existing tables;
+4. the missing `applications` table is created.
 
-`create_all` не удаляет существующие данные. Но это не полноценные миграции: изменение существующей таблицы нужно делать через Alembic или отдельный SQL.
+`create_all` does not delete existing data. However, it is not a full migration system: an existing table must be changed through Alembic or separate SQL.
 
 ## 10. `sessionmaker`
 
@@ -240,36 +240,36 @@ SessionLocal = sessionmaker(
 )
 ```
 
-`SessionLocal` — фабрика объектов `Session`.
+`SessionLocal` is a factory for `Session` objects.
 
-Каждый вызов:
+Each call:
 
 ```python
 db = SessionLocal()
 ```
 
-создаёт новую сессию.
+creates a new session.
 
-Параметры:
+Parameters:
 
-- `bind=engine` — работать через созданный engine;
-- `autocommit=False` — сохранять изменения только после `commit()`;
-- `autoflush=False` — не отправлять изменения автоматически перед каждым запросом.
+- `bind=engine` — work through the created engine;
+- `autocommit=False` — save changes only after `commit()`;
+- `autoflush=False` — do not send changes automatically before each query.
 
 ## 11. `Session`
 
-`Session` — временный рабочий контекст для операций с базой.
+`Session` is a temporary work context for database operations.
 
-Она умеет:
+It can:
 
-- выполнять SELECT;
-- добавлять объекты;
-- изменять объекты;
-- удалять объекты;
-- подтверждать транзакции;
-- откатывать транзакции.
+- execute SELECT;
+- add objects;
+- update objects;
+- delete objects;
+- commit transactions;
+- roll back transactions.
 
-Сессия не является самой базой и не хранит данные после закрытия. Данные сохраняются благодаря `commit()`.
+The session is not the database itself and does not retain data after it closes. Data is saved through `commit()`.
 
 ## 12. `get_db`
 
@@ -282,60 +282,60 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 ```
 
-Порядок:
+Order:
 
-1. создаётся Session;
-2. Session передаётся endpoint-у;
-3. endpoint выполняет операции;
-4. Session закрывается.
+1. a Session is created;
+2. the Session is passed to the endpoint;
+3. the endpoint performs operations;
+4. the Session is closed.
 
-В FastAPI она подключается через dependency:
+In FastAPI, it is connected through a dependency:
 
 ```python
 db: Session = Depends(get_db)
 ```
 
-## 13. `add` — добавить объект в текущую сессию
+## 13. `add` — Add an Object to the Current Session
 
 ```python
 application = Application(**payload.model_dump())
 db.add(application)
 ```
 
-Объект подготовлен к сохранению, но транзакция ещё не подтверждена.
+The object is prepared for saving, but the transaction has not been committed.
 
-## 14. `commit` — подтвердить транзакцию и сохранить изменения
+## 14. `commit` — Commit the Transaction and Save Changes
 
 ```python
 db.commit()
 ```
 
-Изменения записываются в `app.db` только после подтверждения транзакции.
+Changes are written to `app.db` only after the transaction is committed.
 
-Создание заявки:
+Creating an application:
 
 ```python
 db.add(application)
 db.commit()
 ```
 
-Если вызвать только `add`, а затем закрыть сессию без `commit`, запись не должна считаться сохранённой.
+If only `add` is called and the session is then closed without `commit`, the record should not be considered saved.
 
-## 15. `refresh` — перечитать объект из базы
+## 15. `refresh` — Reload an Object from the Database
 
 ```python
 db.refresh(application)
 ```
 
-После сохранения объект повторно загружается из базы.
+After saving, the object is loaded from the database again.
 
-Это нужно после создания, чтобы получить значения, сгенерированные базой:
+This is needed after creation to obtain values generated by the database:
 
 - `id`;
 - `created_at`;
 - `updated_at`.
 
-Полная последовательность:
+Full sequence:
 
 ```python
 db.add(application)
@@ -343,29 +343,29 @@ db.commit()
 db.refresh(application)
 ```
 
-## 16. `get` — найти объект по первичному ключу
+## 16. `get` — Find an Object by Primary Key
 
 ```python
 application = db.get(Application, application_id)
 ```
 
-Поиск выполняется по первичному ключу `id`.
+The search is performed by the primary key `id`.
 
-Пример:
+Example:
 
 ```python
 application = db.get(Application, 1)
 ```
 
-Это соответствует смыслу запроса:
+This corresponds to the meaning of the query:
 
 ```sql
 SELECT * FROM applications WHERE id = 1;
 ```
 
-Если запись не найдена, результатом будет `None`.
+If the record is not found, the result is `None`.
 
-## 17. `select` — построить запрос на чтение
+## 17. `select` — Build a Read Query
 
 ```python
 from sqlalchemy import select
@@ -374,17 +374,17 @@ statement = select(Application).order_by(Application.id)
 applications = db.scalars(statement).all()
 ```
 
-Запрос формируется, но сам по себе ещё не возвращает результаты.
+The query is built, but by itself it does not yet return results.
 
-`order_by(Application.id)` сортирует результат по идентификатору.
+`order_by(Application.id)` sorts the result by identifier.
 
-`db.scalars(statement)` выполняет запрос и извлекает ORM-объекты из результата.
+`db.scalars(statement)` executes the query and extracts ORM objects from the result.
 
-`all()` получает все результаты в виде списка Python.
+`all()` gets all results as a Python list.
 
-## 18. Изменение объекта
+## 18. Updating an Object
 
-В `applications.py`:
+In `applications.py`:
 
 ```python
 for field, value in payload.model_dump(exclude_unset=True).items():
@@ -392,16 +392,16 @@ for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(application, field, value)
 ```
 
-`setattr` изменяет поле ORM-объекта.
+`setattr` changes a field on the ORM object.
 
-После изменения нужно выполнить:
+After the update, run:
 
 ```python
 db.commit()
 db.refresh(application)
 ```
 
-Пример PATCH:
+PATCH example:
 
 ```json
 {
@@ -409,13 +409,13 @@ db.refresh(application)
 }
 ```
 
-Изменяется только статус.
+Only the status changes.
 
-## 19. Транзакции и `rollback`
+## 19. Transactions and `rollback`
 
-Транзакция — группа изменений, которая подтверждается целиком.
+A transaction is a group of changes committed as a whole.
 
-Если произошла ошибка, изменения можно отменить:
+If an error occurs, the changes can be canceled:
 
 ```python
 try:
@@ -426,11 +426,11 @@ except Exception:
     raise
 ```
 
-`rollback()` возвращает базу к состоянию до незавершённой транзакции.
+`rollback()` returns the database to its state before the incomplete transaction.
 
-`close()` закрывает сессию, но сам по себе не заменяет `commit()` или `rollback()`.
+`close()` closes the session, but does not replace `commit()` or `rollback()` by itself.
 
-## 20. Связь SQLAlchemy с API
+## 20. SQLAlchemy and the API
 
 ```text
 FastAPI endpoint
@@ -441,7 +441,7 @@ FastAPI endpoint
     -> SQLite app.db
 ```
 
-Создание заявки:
+Creating an application:
 
 ```python
 @router.post("")
@@ -456,7 +456,7 @@ def create_application(
     return application
 ```
 
-Получение заявок:
+Getting applications:
 
 ```python
 @router.get("")
@@ -465,32 +465,32 @@ def list_applications(db: Session = Depends(get_db)):
     return {"applications": db.scalars(statement).all()}
 ```
 
-## 21. Порядок работы при добавлении новой таблицы
+## 21. Process for Adding a New Table
 
-1. Добавить библиотеку или драйвер в `requirements.txt`.
-2. Добавить URL базы в `config.py` или `.env`.
-3. Использовать общий `Base` из `database.py`.
-4. Создать новую модель в `models.py`.
-5. Убедиться, что модель импортируется до `create_all`.
-6. Создать схемы Pydantic для входных и выходных данных.
-7. Добавить endpoint в роутер.
-8. Получить `Session` через `Depends(get_db)`.
-9. Реализовать `select`, `add`, `commit`, `get` или другие операции.
-10. Проверить API через Swagger.
+1. Add the library or driver to `requirements.txt`.
+2. Add the database URL to `config.py` or `.env`.
+3. Use the shared `Base` from `database.py`.
+4. Create a new model in `models.py`.
+5. Ensure that the model is imported before `create_all`.
+6. Create Pydantic schemas for input and output data.
+7. Add the endpoint to the router.
+8. Obtain a `Session` through `Depends(get_db)`.
+9. Implement `select`, `add`, `commit`, `get`, or other operations.
+10. Check the API through Swagger.
 
-## 22. SQLAlchemy и миграции
+## 22. SQLAlchemy and Migrations
 
-`create_all` подходит для первого создания таблиц. Если таблица уже существует и нужно добавить колонку, лучше использовать Alembic.
+`create_all` is suitable for initially creating tables. If a table already exists and a column must be added, Alembic is a better choice.
 
-Пример изменения модели:
+Example model change:
 
 ```python
 salary: Mapped[str | None] = mapped_column(String(100), nullable=True)
 ```
 
-Само изменение Python-класса не изменит автоматически уже существующую таблицу во всех окружениях. Для контролируемого изменения структуры используют миграции.
+Changing the Python class alone will not automatically change an existing table in every environment. Migrations are used for controlled schema changes.
 
-## 23. Итоговая схема
+## 23. Final Diagram
 
 ```text
 config.py
@@ -500,11 +500,11 @@ database.py
     engine, Base, SessionLocal, get_db
         ↓
 models.py
-    Application и колонки таблицы
+    Application and table columns
         ↓
 applications.py
     select, add, get, commit, refresh
         ↓
 app.db
-    сохранённые заявки
+    saved applications
 ```

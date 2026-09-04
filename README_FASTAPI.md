@@ -1,26 +1,26 @@
-# FastAPI в проекте
+# FastAPI in the Project
 
-## 1. Что такое FastAPI
+## 1. What Is FastAPI
 
-FastAPI — Python-фреймворк для создания веб-API. Он принимает HTTP-запросы, проверяет входные данные, вызывает нужную функцию и возвращает ответ клиенту.
+FastAPI is a Python framework for creating web APIs. It accepts HTTP requests, validates input data, calls the required function, and returns a response to the client.
 
-В проекте FastAPI используется как backend для работы с заявками на вакансии.
+In this project, FastAPI is used as the backend for working with job applications.
 
-Общий путь запроса:
+General request path:
 
 ```text
-Клиент или Swagger
-    -> HTTP-запрос
+Client or Swagger
+    -> HTTP request
     -> FastAPI
-    -> роутер
-    -> функция endpoint
-    -> SQLAlchemy и база данных
-    -> HTTP-ответ
+    -> router
+    -> endpoint function
+    -> SQLAlchemy and database
+    -> HTTP response
 ```
 
-## 2. Запуск приложения
+## 2. Starting the Application
 
-Из корня проекта:
+From the project root:
 
 ```powershell
 cd C:\Users\user\Documents\Project
@@ -28,27 +28,27 @@ cd C:\Users\user\Documents\Project
 python -m uvicorn app.main:app --reload
 ```
 
-Приложение будет доступно по адресу:
+The application will be available at:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Документация Swagger:
+Swagger documentation:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-Документация ReDoc:
+ReDoc documentation:
 
 ```text
 http://127.0.0.1:8000/redoc
 ```
 
-## 3. Главный объект `FastAPI`
+## 3. The Main `FastAPI` Object
 
-В `app/main.py` создаётся приложение:
+The application is created in `app/main.py`:
 
 ```python
 from fastapi import FastAPI
@@ -60,20 +60,20 @@ app = FastAPI(
 )
 ```
 
-`app` — главный объект приложения. Через него подключаются маршруты и события запуска.
-`settings` — объект настроек из `app/core/config.py`; `settings.app_name` подставляет название приложения из конфигурации.
+`app` is the main application object. Routes and startup events are connected through it.
+`settings` is the settings object from `app/core/config.py`; `settings.app_name` supplies the application name from the configuration.
 
-Параметры:
+Parameters:
 
-- `title` — название API в Swagger;
-- `version` — версия API;
-- `description` — описание проекта.
+- `title` — API name in Swagger;
+- `version` — API version;
+- `description` — project description.
 
 ## 4. Endpoint
 
-Endpoint — функция, связанная с HTTP-методом и URL.
+An endpoint is a function associated with an HTTP method and URL.
 
-Пример в `app/main.py`:
+Example in `app/main.py`:
 
 ```python
 @app.get("/")
@@ -84,26 +84,26 @@ async def root():
     }
 ```
 
-Здесь:
+Here:
 
-- `@app.get("/")` означает GET-запрос по адресу `/`;
-- `root` — функция, которая будет вызвана;
-- возвращаемый словарь автоматически превращается в JSON.
+- `@app.get("/")` means a GET request at `/`;
+- `root` is the function that will be called;
+- the returned dictionary is automatically converted to JSON.
 
-## 5. HTTP-методы
+## 5. HTTP Methods
 
-В API заявок используются:
+The application API uses:
 
 ```text
-GET   /applications              получить все заявки
-GET   /applications/{id}         получить одну заявку
-POST  /applications              создать заявку
-PATCH /applications/{id}         изменить заявку
+GET   /applications              get all applications
+GET   /applications/{id}         get one application
+POST  /applications              create an application
+PATCH /applications/{id}         update an application
 ```
 
 ### GET
 
-GET используется для чтения данных:
+GET is used to read data:
 
 ```python
 @router.get("")
@@ -113,7 +113,7 @@ def list_applications(db: Session = Depends(get_db)):
 
 ### POST
 
-POST используется для создания данных:
+POST is used to create data:
 
 ```python
 @router.post("")
@@ -124,12 +124,12 @@ def create_application(
     ...
 ```
 
-`payload` содержит JSON, отправленный клиентом.
-Это объект схемы `ApplicationCreate`, уже проверенный Pydantic.
+`payload` contains the JSON sent by the client.
+It is an `ApplicationCreate` schema object already validated by Pydantic.
 
 ### PATCH
 
-PATCH используется для частичного изменения существующей записи:
+PATCH is used to partially update an existing record:
 
 ```python
 @router.patch("/{application_id}")
@@ -143,7 +143,7 @@ def update_application(
 
 ## 6. `APIRouter`
 
-Для группировки связанных endpoint-ов используется роутер:
+A router is used to group related endpoints:
 
 ```python
 from fastapi import APIRouter
@@ -153,43 +153,43 @@ router = APIRouter(
     tags=["applications"],
 )
 ```
-`prefix` задаёт общий URL `/applications`, а `tags` объединяет эти endpoint-ы в одну группу Swagger с названием `applications`.
+`prefix` sets the shared URL `/applications`, while `tags` groups these endpoints in Swagger under `applications`.
 
-`prefix` — общий префикс, который добавляется к каждому маршруту.
+`prefix` is the shared prefix added to every route.
 
-Поэтому:
+Therefore:
 
 ```python
 @router.get("")
 ```
 
-становится:
+becomes:
 
 ```text
 GET /applications
 ```
 
-А:
+And:
 
 ```python
 @router.get("/{application_id}")
 ```
 
-становится:
+becomes:
 
 ```text
 GET /applications/{application_id}
 ```
 
-Роутер подключается в `main.py`:
+The router is connected in `main.py`:
 
 ```python
 app.include_router(applications_router)
 ```
 
-## 7. Pydantic-схемы и проверка данных
+## 7. Pydantic Schemas and Data Validation
 
-В `app/schemas/application.py` описаны входные данные:
+Input data is defined in `app/schemas/application.py`:
 
 ```python
 class ApplicationCreate(BaseModel):
@@ -201,9 +201,9 @@ class ApplicationCreate(BaseModel):
     source: str = "telegram"
 ```
 
-FastAPI автоматически проверяет JSON до запуска endpoint-а.
+FastAPI automatically validates JSON before starting the endpoint.
 
-Пример корректного запроса:
+Example of a valid request:
 
 ```json
 {
@@ -216,11 +216,11 @@ FastAPI автоматически проверяет JSON до запуска e
 }
 ```
 
-Если обязательное поле отсутствует или пустое, FastAPI возвращает ошибку `422 Unprocessable Entity`.
+If a required field is missing or empty, FastAPI returns a `422 Unprocessable Entity` error.
 
-## 8. Создание заявки через API
+## 8. Creating an Application through the API
 
-Функция:
+Function:
 
 ```python
 @router.post("")
@@ -239,28 +239,28 @@ def create_application(
     }
 ```
 
-Здесь `db.add()` добавляет объект в текущую сессию, `db.commit()` подтверждает транзакцию и сохраняет запись, а `db.refresh()` перечитывает запись из базы, чтобы получить созданные `id` и даты.
+Here, `db.add()` adds the object to the current session, `db.commit()` commits the transaction and saves the record, and `db.refresh()` rereads the record from the database to obtain the generated `id` and dates.
 
-Порядок работы:
+Workflow:
 
-1. FastAPI получает JSON;
-2. Pydantic проверяет данные;
-3. `payload.model_dump()` превращает схему в словарь;
-4. создаётся модель SQLAlchemy;
-5. запись добавляется в базу;
-6. API возвращает JSON-ответ.
+1. FastAPI receives JSON;
+2. Pydantic validates the data;
+3. `payload.model_dump()` converts the schema to a dictionary;
+4. a SQLAlchemy model is created;
+5. the record is added to the database;
+6. the API returns a JSON response.
 
-## 9. Dependency Injection и `Depends`
+## 9. Dependency Injection and `Depends`
 
-В endpoint-е написано:
+The endpoint contains:
 
 ```python
 db: Session = Depends(get_db)
 ```
 
-`Depends` говорит FastAPI: перед вызовом функции получи значение через `get_db`.
+`Depends` tells FastAPI to obtain a value through `get_db` before calling the function.
 
-`get_db` создаёт сессию базы:
+`get_db` creates a database session:
 
 ```python
 def get_db() -> Generator[Session, None, None]:
@@ -271,11 +271,11 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 ```
 
-FastAPI автоматически передаёт `db` в endpoint и после запроса позволяет закрыть сессию.
+FastAPI automatically passes `db` to the endpoint and allows the session to be closed after the request.
 
-## 10. Path-параметры
+## 10. Path Parameters
 
-В маршруте:
+In the route:
 
 ```python
 @router.get("/{application_id}")
@@ -286,17 +286,17 @@ def get_application(
     ...
 ```
 
-`application_id` берётся из URL:
+`application_id` is taken from the URL:
 
 ```text
 GET /applications/5
 ```
 
-Значение `5` автоматически преобразуется в `int`. Если передать строку вместо числа, FastAPI вернёт ошибку валидации.
+The value `5` is automatically converted to `int`. If a string is passed instead of a number, FastAPI returns a validation error.
 
-## 11. Ошибки API
+## 11. API Errors
 
-Если заявка не найдена:
+If the application is not found:
 
 ```python
 from fastapi import HTTPException
@@ -307,7 +307,7 @@ raise HTTPException(
 )
 ```
 
-Клиент получает JSON:
+The client receives JSON:
 
 ```json
 {
@@ -315,17 +315,17 @@ raise HTTPException(
 }
 ```
 
-Частые статусы:
+Common statuses:
 
-- `200` — успешное чтение или изменение;
-- `201` — ресурс создан, если endpoint настроен на такой статус;
-- `404` — запись не найдена;
-- `422` — входные данные не прошли проверку;
-- `500` — внутренняя ошибка сервера.
+- `200` — successful read or update;
+- `201` — resource created when the endpoint is configured for this status;
+- `404` — record not found;
+- `422` — input data failed validation;
+- `500` — internal server error.
 
-## 12. Событие запуска
+## 12. Startup Event
 
-В `main.py` приложение вызывает инициализацию базы при запуске:
+In `main.py`, the application initializes the database at startup:
 
 ```python
 @app.on_event("startup")
@@ -333,51 +333,51 @@ def startup() -> None:
     init_db()
 ```
 
-До обработки запросов FastAPI вызывает `init_db`, после чего таблица `applications` готова к работе.
+Before processing requests, FastAPI calls `init_db`, after which the `applications` table is ready to use.
 
 ## 13. Swagger
 
-Swagger создаётся FastAPI автоматически.
+Swagger is created automatically by FastAPI.
 
-Для создания заявки:
+To create an application:
 
-1. открыть `/docs`;
-2. найти `POST /applications`;
-3. нажать `Try it out`;
-4. вставить JSON;
-5. нажать `Execute`.
+1. open `/docs`;
+2. find `POST /applications`;
+3. click `Try it out`;
+4. paste the JSON;
+5. click `Execute`.
 
-Для просмотра заявок использовать `GET /applications`.
+Use `GET /applications` to view applications.
 
-## 14. Связь FastAPI с остальным кодом
+## 14. FastAPI and the Rest of the Code
 
 ```text
 app/main.py
-    создаёт FastAPI и подключает роутеры
+    creates FastAPI and connects routers
         ↓
 app/api/routes/applications.py
-    принимает HTTP-запросы
+    accepts HTTP requests
         ↓
 app/schemas/application.py
-    проверяет входные данные
+    validates input data
         ↓
 app/db/database.py
-    выдаёт Session
+    provides a Session
         ↓
 app/db/models.py
-    описывает таблицу Application
+    defines the Application table
         ↓
 app.db
-    хранит данные
+    stores data
 ```
 
-## 15. Словарь терминов
+## 15. Glossary
 
 ### API
 
-API — интерфейс, через который одна программа взаимодействует с другой. В нашем случае клиент отправляет HTTP-запросы FastAPI.
+An API is an interface through which one program interacts with another. In this case, the client sends HTTP requests to FastAPI.
 
-Пример:
+Example:
 
 ```text
 POST /applications
@@ -385,11 +385,11 @@ POST /applications
 
 ### FastAPI
 
-FastAPI — Python-фреймворк, который принимает HTTP-запросы, вызывает нужные функции и формирует ответы.
+FastAPI is a Python framework that accepts HTTP requests, calls the required functions, and forms responses.
 
 ### Endpoint
 
-Endpoint — конкретная функция API, связанная с HTTP-методом и адресом.
+An endpoint is a specific API function associated with an HTTP method and address.
 
 ```python
 @router.get("")
@@ -397,11 +397,11 @@ def list_applications():
     ...
 ```
 
-Эта функция обслуживает запрос `GET /applications`.
+This function handles the `GET /applications` request.
 
-### Router и `APIRouter`
+### Router and `APIRouter`
 
-Router — группа связанных маршрутов. `APIRouter` создаёт такой объект:
+A router is a group of related routes. `APIRouter` creates such an object:
 
 ```python
 router = APIRouter(
@@ -412,101 +412,101 @@ router = APIRouter(
 
 ### `prefix`
 
-`prefix` — общий начальный фрагмент URL для всех маршрутов роутера.
+`prefix` is the shared initial URL fragment for all router routes.
 
 ```python
 prefix="/applications"
 ```
 
-Поэтому маршрут:
+Therefore, the route:
 
 ```python
 @router.get("")
 ```
 
-получает полный адрес:
+gets the full address:
 
 ```text
 GET /applications
 ```
 
-А `@router.get("/{application_id}")` становится `GET /applications/{application_id}`.
+And `@router.get("/{application_id}")` becomes `GET /applications/{application_id}`.
 
 ### `tags`
 
-`tags` — название группы endpoint-ов в Swagger.
+`tags` is the name of the endpoint group in Swagger.
 
 ```python
 tags=["applications"]
 ```
 
-Это не таблица базы и не URL. Тег нужен для удобной группировки маршрутов в документации.
+This is neither a database table nor a URL. The tag is used to group routes conveniently in the documentation.
 
 ### Swagger / OpenAPI
 
-Swagger UI — веб-страница для просмотра и проверки API. В FastAPI она доступна по адресу `/docs`.
+Swagger UI is a web page for viewing and testing an API. In FastAPI, it is available at `/docs`.
 
-OpenAPI — стандартное описание API: маршрутов, параметров, схем запросов и ответов. FastAPI автоматически создаёт его на основе Python-кода и Pydantic-моделей.
+OpenAPI is a standard description of an API’s routes, parameters, and request and response schemas. FastAPI automatically creates it from Python code and Pydantic models.
 
-Swagger позволяет нажать `Try it out`, заполнить JSON и отправить настоящий запрос к приложению.
+Swagger lets you click `Try it out`, fill in JSON, and send a real request to the application.
 
 ### ReDoc
 
-ReDoc — альтернативный интерфейс документации OpenAPI. В проекте он доступен по адресу `/redoc`.
+ReDoc is an alternative OpenAPI documentation interface. In this project, it is available at `/redoc`.
 
-Swagger удобнее для ручного тестирования, а ReDoc часто удобнее для чтения документации.
+Swagger is more convenient for manual testing, while ReDoc is often more convenient for reading documentation.
 
 ### Pydantic
 
-Pydantic — библиотека проверки и преобразования данных.
+Pydantic is a library for validating and converting data.
 
-В проекте она используется в файле `app/schemas/application.py`:
+In this project, it is used in `app/schemas/application.py`:
 
 ```python
 class ApplicationCreate(BaseModel):
     company: str = Field(..., min_length=1)
 ```
 
-Pydantic проверяет, что:
+Pydantic checks that:
 
-- поле `company` существует;
-- значение является строкой;
-- строка содержит хотя бы один символ.
+- the `company` field exists;
+- the value is a string;
+- the string contains at least one character.
 
-Если данные неправильные, FastAPI не запускает endpoint и возвращает ошибку `422`.
+If the data is invalid, FastAPI does not start the endpoint and returns a `422` error.
 
 ### `BaseModel`
 
-`BaseModel` — базовый класс Pydantic. От него наследуются схемы входных и выходных данных.
+`BaseModel` is the Pydantic base class. Input and output data schemas inherit from it.
 
 ```python
 class ApplicationCreate(BaseModel):
     ...
 ```
 
-### Schema / схема
+### Schema
 
-Схема — описание формы данных, которые API принимает или возвращает.
+A schema describes the shape of the data that the API accepts or returns.
 
-Например, `ApplicationCreate` описывает данные для создания заявки, а `ApplicationUpdate` — поля, которые можно изменить.
+For example, `ApplicationCreate` describes data for creating an application, while `ApplicationUpdate` describes the fields that can be changed.
 
-Схема Pydantic и модель SQLAlchemy — разные вещи:
+The Pydantic schema and SQLAlchemy model are different things:
 
 ```text
-Pydantic-схема  → проверяет HTTP-данные
-SQLAlchemy-модель → описывает таблицу базы
+Pydantic schema  → validates HTTP data
+SQLAlchemy model → defines the database table
 ```
 
 ### `payload`
 
-`payload` — переменная с данными тела HTTP-запроса.
+`payload` is the variable containing the HTTP request body data.
 
 ```python
 def create_application(payload: ApplicationCreate):
     ...
 ```
 
-Если клиент отправил JSON:
+If the client sends JSON:
 
 ```json
 {
@@ -515,31 +515,31 @@ def create_application(payload: ApplicationCreate):
 }
 ```
 
-FastAPI проверяет его и передаёт функции как объект `payload` типа `ApplicationCreate`.
+FastAPI validates it and passes it to the function as an `ApplicationCreate` object named `payload`.
 
-### Request body / тело запроса
+### Request Body
 
-Тело запроса — данные, отправленные клиентом внутри HTTP-запроса. Для `POST /applications` это JSON с информацией о вакансии.
+The request body is the data sent by the client inside an HTTP request. For `POST /applications`, this is JSON containing vacancy information.
 
-### Path parameter / параметр пути
+### Path Parameter
 
-Параметр пути находится прямо в URL:
+The path parameter is located directly in the URL:
 
 ```python
 @router.get("/{application_id}")
 ```
 
-Запрос:
+Request:
 
 ```text
 GET /applications/5
 ```
 
-передаст функции значение `application_id = 5`.
+passes the value `application_id = 5` to the function.
 
 ### `settings`
 
-`settings` — объект с настройками приложения из `app/core/config.py`.
+`settings` is the application settings object from `app/core/config.py`.
 
 ```python
 from app.core.config import settings
@@ -547,7 +547,7 @@ from app.core.config import settings
 app_name = settings.app_name
 ```
 
-В настройках проекта хранятся:
+The project settings contain:
 
 ```python
 app_name
@@ -557,89 +557,89 @@ telegram_bot_token
 api_base_url
 ```
 
-Значения могут быть заданы по умолчанию или прочитаны из `.env`.
+Values can be provided by default or read from `.env`.
 
 ### `.env`
 
-`.env` — файл переменных окружения. В нём удобно хранить настройки, которые не должны быть жёстко записаны в коде.
+`.env` is an environment-variable file. It is useful for storing settings that should not be hard-coded in the code.
 
-Пример:
+Example:
 
 ```env
 DATABASE_URL=sqlite:///./app.db
 TELEGRAM_BOT_TOKEN=your_token_here
 ```
 
-Секретные токены не следует добавлять в Git.
+Secret tokens should not be added to Git.
 
 ### `Depends`
 
-`Depends` — механизм Dependency Injection в FastAPI.
+`Depends` is FastAPI's Dependency Injection mechanism.
 
 ```python
 db: Session = Depends(get_db)
 ```
 
-Это означает: перед запуском endpoint вызови `get_db` и передай результат в параметр `db`.
+This means: before starting the endpoint, call `get_db` and pass the result to the `db` parameter.
 
-В нашем случае FastAPI автоматически:
+In this case, FastAPI automatically:
 
-1. создаёт Session;
-2. передаёт её функции;
-3. после запроса закрывает Session.
+1. creates a Session;
+2. passes it to the function;
+3. closes the Session after the request.
 
 ### Dependency Injection
 
-Dependency Injection — передача готовой зависимости функции извне.
+Dependency Injection means passing a ready dependency to a function from outside.
 
-Endpoint не создаёт сессию вручную:
+The endpoint does not create the session manually:
 
 ```python
 def list_applications(db: Session = Depends(get_db)):
     ...
 ```
 
-FastAPI сам управляет получением `db` через `get_db`.
+FastAPI manages obtaining `db` through `get_db`.
 
 ### `Session`
 
-`Session` — временный рабочий объект SQLAlchemy для чтения и изменения данных в базе.
+`Session` is a temporary SQLAlchemy work object for reading and changing database data.
 
 ```python
 db: Session
 ```
 
-Session не является самой базой и не хранит данные после закрытия. Данные сохраняются через `commit()`.
+Session is not the database itself and does not retain data after it is closed. Data is saved through `commit()`.
 
 ### `db.add()`
 
-`add()` добавляет объект в текущую сессию:
+`add()` adds an object to the current session:
 
 ```python
 db.add(application)
 ```
 
-На этом шаге объект подготовлен к сохранению, но транзакция ещё не подтверждена.
+At this step, the object is prepared for saving, but the transaction has not been committed.
 
 ### `db.commit()`
 
-`commit()` подтверждает транзакцию и сохраняет изменения в `app.db`:
+`commit()` commits the transaction and saves changes to `app.db`:
 
 ```python
 db.commit()
 ```
 
-Без `commit()` новая заявка может не сохраниться после закрытия Session.
+Without `commit()`, a new application may not be saved after Session is closed.
 
 ### `db.refresh()`
 
-`refresh()` заново загружает объект из базы:
+`refresh()` reloads the object from the database:
 
 ```python
 db.refresh(application)
 ```
 
-После создания это позволяет получить значения, которые назначила база:
+After creation, this provides values assigned by the database:
 
 - `id`;
 - `created_at`;
@@ -647,49 +647,49 @@ db.refresh(application)
 
 ### `db.get()`
 
-`get()` ищет запись по первичному ключу:
+`get()` searches for a record by its primary key:
 
 ```python
 application = db.get(Application, application_id)
 ```
 
-Если запись не существует, результатом будет `None`.
+If the record does not exist, the result is `None`.
 
 ### `select()`
 
-`select()` создаёт SQLAlchemy-запрос на чтение:
+`select()` creates a SQLAlchemy read query:
 
 ```python
 statement = select(Application).order_by(Application.id)
 applications = db.scalars(statement).all()
 ```
 
-`order_by` задаёт сортировку, `scalars` извлекает ORM-объекты, а `all` получает все результаты.
+`order_by` sets the sort order, `scalars` extracts ORM objects, and `all` gets all results.
 
 ### `model_dump()`
 
-`model_dump()` превращает Pydantic-объект в обычный Python-словарь:
+`model_dump()` converts a Pydantic object into a regular Python dictionary:
 
 ```python
 data = payload.model_dump()
 application = Application(**data)
 ```
 
-Оператор `**` передаёт элементы словаря как именованные аргументы конструктора.
+The `**` operator passes dictionary items as named constructor arguments.
 
 ### `exclude_unset=True`
 
-Этот параметр оставляет только поля, которые клиент действительно передал:
+This parameter keeps only fields that the client actually sent:
 
 ```python
 payload.model_dump(exclude_unset=True)
 ```
 
-Это важно для `PATCH`: если клиент меняет только `status`, остальные поля не затираются.
+This is important for `PATCH`: if the client changes only `status`, the other fields are not overwritten.
 
 ### `HTTPException`
 
-`HTTPException` останавливает обработку и возвращает клиенту HTTP-ошибку:
+`HTTPException` stops processing and returns an HTTP error to the client:
 
 ```python
 raise HTTPException(
@@ -700,26 +700,26 @@ raise HTTPException(
 
 ### `status_code`
 
-`status_code` — числовой результат HTTP-запроса.
+`status_code` is the numeric result of an HTTP request.
 
-Основные значения в проекте:
+The main values in the project are:
 
-- `200` — операция выполнена;
-- `404` — заявка не найдена;
-- `422` — данные не прошли проверку;
-- `500` — ошибка сервера.
+- `200` — operation completed;
+- `404` — application not found;
+- `422` — data failed validation;
+- `500` — server error.
 
 ### JSON
 
-JSON — текстовый формат обмена данными между клиентом и API.
+JSON is a text format for exchanging data between a client and an API.
 
-Python-словарь:
+Python dictionary:
 
 ```python
 {"company": "Google"}
 ```
 
-передаётся клиенту как JSON:
+is sent to the client as JSON:
 
 ```json
 {"company": "Google"}
@@ -727,19 +727,19 @@ Python-словарь:
 
 ### ORM
 
-ORM расшифровывается как Object-Relational Mapping — объектно-реляционное отображение.
+ORM stands for Object-Relational Mapping.
 
-Вместо ручного SQL мы работаем с объектом:
+Instead of writing SQL manually, we work with an object:
 
 ```python
 application = Application(...)
 ```
 
-SQLAlchemy связывает его с таблицей `applications`.
+SQLAlchemy links it to the `applications` table.
 
 ### `startup`
 
-`startup` — событие запуска FastAPI:
+`startup` is a FastAPI startup event:
 
 ```python
 @app.on_event("startup")
@@ -747,21 +747,21 @@ def startup() -> None:
     init_db()
 ```
 
-Перед обработкой запросов вызывается `init_db`, который создаёт отсутствующие таблицы.
+Before requests are processed, `init_db` is called to create missing tables.
 
 ### `uvicorn`
 
-Uvicorn — ASGI-сервер, который запускает FastAPI-приложение:
+Uvicorn is an ASGI server that runs a FastAPI application:
 
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-В записи `app.main:app`:
+In `app.main:app`:
 
-- `app.main` — Python-модуль `app/main.py`;
-- `app` — объект FastAPI внутри этого модуля.
+- `app.main` — the Python module `app/main.py`;
+- `app` — the FastAPI object inside this module.
 
-Флаг `--reload` перезапускает сервер после изменения кода и используется в разработке.
+The `--reload` flag restarts the server after code changes and is used during development.
 
-FastAPI отвечает за HTTP-слой. Он не является базой данных и не хранит заявки самостоятельно.
+FastAPI handles the HTTP layer. It is not a database and does not store applications by itself.

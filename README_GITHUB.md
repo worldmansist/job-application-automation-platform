@@ -1,66 +1,66 @@
 # GitHub workflow for this project
 
-Ниже — базовый набор команд для сохранения и обновления проекта в GitHub.
+Below is a basic set of commands for saving and updating the project on GitHub.
 
-## 1. Проверить статус
+## 1. Check the Status
 
 ```bash
 git status
 ```
 
-## 2. Добавить файлы в индекс
+## 2. Add Files to the Index
 
 ```bash
 git add .
 ```
 
-Или только выбранные файлы:
+Or only selected files:
 
 ```bash
 git add app README.md requirements.txt
 ```
 
-## 3. Создать коммит
+## 3. Create a Commit
 
 ```bash
 git commit -m "Initial project setup"
 ```
 
-Или после изменений:
+Or after making changes:
 
 ```bash
 git commit -m "Add application API and schemas"
 ```
 
-## 4. Подключить GitHub репозиторий
+## 4. Connect a GitHub Repository
 
-Если репозиторий ещё не создан:
+If the repository has not been created yet:
 
 ```bash
 git remote add origin https://github.com/<username>/<repo-name>.git
 ```
 
-Проверить привязку:
+Check the connection:
 
 ```bash
 git remote -v
 ```
 
-## 5. Отправить изменения в GitHub
+## 5. Push Changes to GitHub
 
 ```bash
 git push -u origin main
 ```
 
-Если ветка называется `master`:
+If the branch is called `master`:
 
 ```bash
 git push -u origin master
 ```
 
-## 6. Дальнейшие обновления
+## 6. Further Updates
 
-После каждого изменения:
+After each change:
 
 ```bash
 git status
@@ -69,13 +69,13 @@ git commit -m "Describe your changes"
 git push
 ```
 
-## 7. Создать новую ветку
+## 7. Create a New Branch
 
 ```bash
 git checkout -b feature/my-change
 ```
 
-После работы:
+After finishing:
 
 ```bash
 git add .
@@ -83,21 +83,21 @@ git commit -m "Add my change"
 git push -u origin feature/my-change
 ```
 
-## 8. Обновить локальную ветку из GitHub
+## 8. Update the Local Branch from GitHub
 
 ```bash
 git pull origin main
 ```
 
-## 9. Полезная команда для просмотра истории
+## 9. Useful Command for Viewing History
 
 ```bash
 git log --oneline
 ```
 
-## 10. Для Windows PowerShell
+## 10. For Windows PowerShell
 
-Если нужно выполнить всё быстро:
+To run everything quickly:
 
 ```powershell
 git status
@@ -106,7 +106,7 @@ git commit -m "Update project"
 git push
 ```
 
-## 11. Быстрый шаблон для текущей работы
+## 11. Quick Template for Current Work
 
 ```bash
 git add .
@@ -114,4 +114,4 @@ git commit -m "Update app routes and schemas"
 git push
 ```
 
-> Если после `git push` появляется ошибка, обычно это связано с тем, что репозиторий ещё не привязан или ветка не совпадает с основной.
+> If `git push` produces an error, it is usually because the repository is not connected yet or the branch does not match the main branch.

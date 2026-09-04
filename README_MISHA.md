@@ -1,113 +1,113 @@
-# Руководство по запуску проекта
+# Project Startup Guide
 
-## Предварительные требования
+## Prerequisites
 
-- Python 3.8 или выше
-- pip (обычно поставляется с Python)
+- Python 3.8 or later
+- pip (usually included with Python)
 
-## Шаг 1: Создание и активация виртуального окружения
+## Step 1: Create and Activate a Virtual Environment
 
-### На Windows:
+### On Windows:
 
-Если виртуальное окружение еще не создано, выполните в PowerShell:
+If the virtual environment has not been created yet, run this in PowerShell:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Если окружение уже создано, выполните только команду активации:
+If the environment already exists, run only the activation command:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Если получаете ошибку политики выполнения (`ExecutionPolicy`), используйте:
+If you receive an execution policy error (`ExecutionPolicy`), use:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-Или используйте Command Prompt вместо PowerShell.
+Or use Command Prompt instead of PowerShell.
 
-### На macOS/Linux:
+### On macOS/Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-Если виртуальное окружение еще не создано, создайте его:
+If the virtual environment has not been created yet, create it:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-## Шаг 2: Установка зависимостей
+## Step 2: Install Dependencies
 
-После активации виртуального окружения выполните:
+After activating the virtual environment, run:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Шаг 3: Настройка переменных окружения
+## Step 3: Configure Environment Variables
 
-Создайте файл `.env` в корне проекта и добавьте токен Telegram:
+Create an `.env` file in the project root and add the Telegram token:
 
 ```env
 TELEGRAM_BOT_TOKEN=your_token_here
 API_BASE_URL=http://127.0.0.1:8000
 ```
 
-## Шаг 4: Запуск приложения и бота
+## Step 4: Start the Application and Bot
 
-В проекте нужно запускать два процесса в разных терминалах.
+The project requires two processes running in separate terminals.
 
-### Терминал 1: FastAPI
+### Terminal 1: FastAPI
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload
 ```
 
-Приложение будет доступно по адресу: **http://localhost:8000**
+The application will be available at: **http://localhost:8000**
 
-### Терминал 2: Telegram Bot
+### Terminal 2: Telegram Bot
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m app.bot.main
 ```
 
-### Опции запуска:
+### Startup Options:
 
-- `--reload` — автоматическая перезагрузка при изменении файлов (для разработки)
-- `--host 0.0.0.0` — доступно из других компьютеров в сети
-- `--port 8080` — использовать другой порт вместо 8000
+- `--reload` — automatically reload when files change (for development)
+- `--host 0.0.0.0` — available from other computers on the network
+- `--port 8080` — use a different port instead of 8000
 
-Пример запуска API на другом порту:
+Example of starting the API on another port:
 
 ```powershell
 uvicorn app.main:app --reload --port 8080
 ```
 
-## Документация API
+## API Documentation
 
-После запуска приложения вы можете просмотреть документацию API:
+After starting the application, you can view the API documentation:
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
-## Деактивация виртуального окружения
+## Deactivate the Virtual Environment
 
-Когда закончите работу, деактивируйте окружение:
+When you finish, deactivate the environment:
 
 ```bash
 deactivate
 ```
 
-## Полная последовательность команд для быстрого старта
+## Complete Quick-Start Command Sequence
 
 ### Windows:
 
@@ -117,23 +117,23 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Создайте файл `.env`:
+Create an `.env` file:
 
 ```env
 TELEGRAM_BOT_TOKEN=your_token_here
 API_BASE_URL=http://127.0.0.1:8000
 ```
 
-Запуск в двух терминалах:
+Start in two terminals:
 
 ```powershell
-# Терминал 1
+# Terminal 1
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload
 ```
 
 ```powershell
-# Терминал 2
+# Terminal 2
 .\.venv\Scripts\Activate.ps1
 python -m app.bot.main
 ```
@@ -147,11 +147,11 @@ pip install -r requirements.txt
 ```
 
 ```bash
-# Терминал 1
+# Terminal 1
 uvicorn app.main:app --reload
 ```
 
 ```bash
-# Терминал 2
+# Terminal 2
 python -m app.bot.main
 ```

@@ -1,37 +1,37 @@
-# Как работает подключение базы данных
+# How the Database Connection Works
 
-Этот файл объясняет подключение SQLite и SQLAlchemy в проекте простыми шагами.
+This file explains the SQLite and SQLAlchemy connection in the project in simple steps.
 
-## 1. Что было до подключения базы
+## 1. Before Connecting the Database
 
-Изначально заявки хранились в обычном списке Python:
+Initially, applications were stored in a regular Python list:
 
 ```python
 applications = []
 ```
 
-При создании заявки объект добавлялся в этот список. Проблема в том, что список существует только пока работает процесс Python. После перезапуска FastAPI все заявки исчезали.
+When an application was created, the object was added to this list. The problem is that the list exists only while the Python process is running. After restarting FastAPI, all applications disappeared.
 
-Теперь данные проходят такой путь:
+Now the data follows this path:
 
 ```text
-HTTP-запрос
+HTTP request
     -> FastAPI
     -> SQLAlchemy Session
-    -> модель Application
-    -> таблица applications
-    -> файл app.db
+    -> Application model
+    -> applications table
+    -> app.db file
 ```
 
-Файл `app.db` является локальной SQLite-базой проекта.
+The `app.db` file is the project's local SQLite database.
 
-## 2. Какие библиотеки участвуют
+## 2. Libraries Involved
 
 ### FastAPI
 
-FastAPI принимает HTTP-запросы и вызывает функции из `app/api/routes/applications.py`.
+FastAPI accepts HTTP requests and calls functions from `app/api/routes/applications.py`.
 
-В проекте используются маршруты:
+The project uses these routes:
 
 ```text
 GET   /applications
@@ -40,13 +40,13 @@ POST  /applications
 PATCH /applications/{application_id}
 ```
 
-FastAPI также проверяет входные данные через Pydantic-схемы из `app/schemas/application.py`.
+FastAPI also validates input data through the Pydantic schemas in `app/schemas/application.py`.
 
 ### SQLAlchemy
 
-SQLAlchemy связывает Python-классы с таблицами базы данных.
+SQLAlchemy connects Python classes to database tables.
 
-Вместо ручного SQL мы работаем с объектами Python:
+Instead of writing SQL manually, we work with Python objects:
 
 ```python
 application = Application(**payload.model_dump())
@@ -54,88 +54,88 @@ db.add(application)
 db.commit()
 ```
 
-SQLAlchemy превращает эти операции в SQL-запросы к SQLite.
+SQLAlchemy converts these operations into SQL queries for SQLite.
 
 ### SQLite
 
-SQLite является самой базой данных. В нашем случае она хранится в одном файле:
+SQLite is the database itself. In this case, it is stored in one file:
 
 ```text
 app.db
 ```
 
-Для начала разработки это удобно: не нужно устанавливать отдельный сервер PostgreSQL.
+This is convenient for initial development: there is no need to install a separate PostgreSQL server.
 
 ### Pydantic Settings
 
-`pydantic-settings` читает настройки приложения из переменных окружения и файла `.env`.
+`pydantic-settings` reads application settings from environment variables and the `.env` file.
 
-Благодаря этому адрес базы не нужно жёстко прописывать в каждом файле.
+This means the database address does not need to be hard-coded in every file.
 
-## 3. Порядок внесения изменений
+## 3. Order of Changes
 
-Изменения должны вноситься снизу вверх по цепочке зависимостей:
+Changes should be made from the bottom up along the dependency chain:
 
 ```text
-1. requirements.txt  - установить библиотеку
-2. config.py         - добавить адрес базы
-3. database.py       - создать engine и Session
-4. models.py         - описать таблицы
-5. main.py           - создать таблицы при запуске
-6. applications.py   - использовать БД в API
-7. Проверка          - создать и прочитать заявку
+1. requirements.txt  - install the library
+2. config.py         - add the database address
+3. database.py       - create engine and Session
+4. models.py         - define the tables
+5. main.py           - create tables at startup
+6. applications.py   - use the database in the API
+7. Check             - create and read an application
 ```
 
-Такой порядок важен: роутер не может импортировать модель, если модель ещё не создана, а модель не может подключиться без `engine` и настроек.
+This order matters: the router cannot import a model that does not exist yet, and the model cannot connect without `engine` and settings.
 
-## 4. Файл `requirements.txt`
+## 4. The `requirements.txt` File
 
-Добавлена строка:
+The following line was added:
 
 ```text
 sqlalchemy==2.0.36
 ```
 
-Она устанавливает SQLAlchemy фиксированной версии.
+It installs a fixed version of SQLAlchemy.
 
-После изменения зависимостей выполняется:
+After changing dependencies, run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Использование Python из `.venv` гарантирует, что библиотека установится именно в окружение проекта.
+Using Python from `.venv` ensures that the library is installed into the project environment.
 
-## 5. Файл `app/core/config.py`
+## 5. The `app/core/config.py` File
 
-Добавлена настройка:
+The following setting was added:
 
 ```python
 database_url: str = "sqlite:///./app.db"
 ```
 
-Это адрес базы данных.
+This is the database address.
 
-Разбор значения:
+Value breakdown:
 
-- `sqlite` — используемый тип базы;
-- `./app.db` — файл в текущей рабочей папке проекта;
-- `database_url` — имя настройки Python;
-- `DATABASE_URL` — соответствующее имя переменной в `.env`.
+- `sqlite` — the database type in use;
+- `./app.db` — the file in the project's current working directory;
+- `database_url` — the Python setting name;
+- `DATABASE_URL` — the corresponding variable name in `.env`.
 
-Можно создать `.env` в корне проекта:
+You can create `.env` in the project root:
 
 ```env
 DATABASE_URL=sqlite:///./app.db
 ```
 
-Если переменная не указана, используется значение по умолчанию из `config.py`.
+If the variable is not specified, the default value from `config.py` is used.
 
-Позже SQLite можно заменить на PostgreSQL, изменив только адрес и установив драйвер PostgreSQL. Роутеры при этом останутся почти такими же.
+SQLite can later be replaced with PostgreSQL by changing only the address and installing the PostgreSQL driver. The routers will remain almost the same.
 
-## 6. Файл `app/db/database.py`
+## 6. The `app/db/database.py` File
 
-Этот файл является общей точкой подключения к базе.
+This file is the shared database connection point.
 
 ### `Base`
 
@@ -144,13 +144,13 @@ class Base(DeclarativeBase):
     pass
 ```
 
-`Base` — общий родитель моделей SQLAlchemy. Все модели, унаследованные от него, попадают в метаданные:
+`Base` is the common parent of SQLAlchemy models. All models that inherit from it are added to the metadata:
 
 ```python
 Base.metadata
 ```
 
-По этим метаданным SQLAlchemy понимает, какие таблицы нужно создать.
+SQLAlchemy uses this metadata to determine which tables need to be created.
 
 ### `connect_args`
 
@@ -162,9 +162,9 @@ connect_args = (
 )
 ```
 
-SQLite имеет ограничение на использование соединений из разных потоков. FastAPI может обрабатывать запросы в разных потоках, поэтому для SQLite передаётся `check_same_thread=False`.
+SQLite restricts the use of connections from different threads. FastAPI can process requests in different threads, so `check_same_thread=False` is passed for SQLite.
 
-Для PostgreSQL эта настройка не нужна, поэтому передаётся пустой словарь.
+This setting is not needed for PostgreSQL, so an empty dictionary is passed.
 
 ### `engine`
 
@@ -175,7 +175,7 @@ engine = create_engine(
 )
 ```
 
-`engine` знает, где находится база и как к ней подключаться. Он не является одной конкретной заявкой или одной сессией.
+`engine` knows where the database is and how to connect to it. It is not a particular application or session.
 
 ### `SessionLocal`
 
@@ -187,17 +187,17 @@ SessionLocal = sessionmaker(
 )
 ```
 
-`sessionmaker` — фабрика сессий. Каждый вызов создаёт отдельный рабочий объект:
+`sessionmaker` is a session factory. Each call creates a separate work object:
 
 ```python
 db = SessionLocal()
 ```
 
-Параметры:
+Parameters:
 
-- `bind=engine` — сессия работает через наш `engine`;
-- `autocommit=False` — изменения нужно подтверждать через `db.commit()`;
-- `autoflush=False` — SQLAlchemy не отправляет накопленные изменения автоматически перед каждым запросом.
+- `bind=engine` — the session works through our `engine`;
+- `autocommit=False` — changes must be committed with `db.commit()`;
+- `autoflush=False` — SQLAlchemy does not automatically send accumulated changes before each query.
 
 ### `get_db`
 
@@ -210,11 +210,11 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 ```
 
-Функция создаёт сессию, передаёт её обработчику FastAPI и закрывает после завершения запроса.
+The function creates a session, passes it to the FastAPI handler, and closes it after the request finishes.
 
-`yield` нужен, чтобы FastAPI временно получил объект `db`.
+`yield` lets FastAPI receive the `db` object temporarily.
 
-Сессия не равна базе данных. Это временный рабочий контекст для операций с базой.
+The session is not the database. It is a temporary work context for database operations.
 
 ### `init_db`
 
@@ -225,28 +225,28 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 ```
 
-`create_all` создаёт таблицы, которых ещё нет.
+`create_all` creates tables that do not exist yet.
 
-Импорт `Application` внутри функции нужен, чтобы модель была зарегистрирована в `Base.metadata` до вызова `create_all`.
+The `Application` import inside the function ensures that the model is registered in `Base.metadata` before `create_all` is called.
 
-## 7. Файл `app/db/models.py`
+## 7. The `app/db/models.py` File
 
-Модель описывает таблицу базы:
+The model describes a database table:
 
 ```python
 class Application(Base):
     __tablename__ = "applications"
 ```
 
-Это означает: класс `Application` связан с таблицей `applications`.
+This means that the `Application` class is connected to the `applications` table.
 
-### Поля модели
+### Model Fields
 
 ```python
 id: Mapped[int] = mapped_column(primary_key=True)
 ```
 
-Первичный ключ заявки. SQLite автоматически выдаёт новые значения `id`.
+The application's primary key. SQLite automatically assigns new `id` values.
 
 ```python
 company: Mapped[str] = mapped_column(String(255))
@@ -254,20 +254,20 @@ position: Mapped[str] = mapped_column(String(255))
 url: Mapped[str] = mapped_column(String(2048))
 ```
 
-Текстовые поля компании, должности и ссылки.
+Text fields for the company, position, and link.
 
 ```python
 description: Mapped[str] = mapped_column(Text)
 ```
 
-Длинное описание вакансии.
+Long vacancy description.
 
 ```python
 status: Mapped[str] = mapped_column(String(50), default="new")
 source: Mapped[str] = mapped_column(String(50), default="telegram")
 ```
 
-Статус и источник заявки. Если значения не переданы, используются значения по умолчанию.
+The application's status and source. If values are not provided, the default values are used.
 
 ```python
 created_at: Mapped[datetime] = mapped_column(
@@ -276,7 +276,7 @@ created_at: Mapped[datetime] = mapped_column(
 )
 ```
 
-Дата создания устанавливается базой.
+The creation date is set by the database.
 
 ```python
 updated_at: Mapped[datetime] = mapped_column(
@@ -286,9 +286,9 @@ updated_at: Mapped[datetime] = mapped_column(
 )
 ```
 
-Дата создания устанавливается при добавлении, а `onupdate` просит SQLAlchemy обновлять её при изменении записи.
+The creation date is set when the record is added, while `onupdate` asks SQLAlchemy to update it when the record changes.
 
-Итоговая таблица:
+Final table:
 
 ```text
 applications
@@ -303,15 +303,15 @@ applications
 - updated_at
 ```
 
-## 8. Файл `app/main.py`
+## 8. The `app/main.py` File
 
-В главный файл добавлен импорт:
+The following import was added to the main file:
 
 ```python
 from app.db.database import init_db
 ```
 
-И обработчик запуска:
+And the following startup handler:
 
 ```python
 @app.on_event("startup")
@@ -319,23 +319,23 @@ def startup() -> None:
     init_db()
 ```
 
-Когда запускается FastAPI, вызывается `startup`, а затем `init_db`.
+When FastAPI starts, `startup` is called, followed by `init_db`.
 
-Если файла `app.db` ещё нет, SQLite создаёт его. Затем SQLAlchemy создаёт таблицу `applications`.
+If `app.db` does not exist yet, SQLite creates it. SQLAlchemy then creates the `applications` table.
 
-Это происходит автоматически при запуске:
+This happens automatically at startup:
 
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-Важно: `create_all` создаёт отсутствующие таблицы, но не является полноценной системой миграций. Если существующую таблицу нужно изменить, позже понадобится Alembic.
+Important: `create_all` creates missing tables but is not a full migration system. If an existing table needs to be changed, Alembic will be needed later.
 
-## 9. Файл `app/api/routes/applications.py`
+## 9. The `app/api/routes/applications.py` File
 
-Здесь API переключён со списка Python на базу.
+Here, the API has been switched from a Python list to the database.
 
-### Подключение зависимостей
+### Connecting Dependencies
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException
@@ -346,13 +346,13 @@ from app.db.database import get_db
 from app.db.models import Application
 ```
 
-- `Depends` просит FastAPI передать сессию;
-- `Session` используется для аннотации типа;
-- `select` создаёт запрос на выборку;
-- `Application` представляет таблицу;
-- `get_db` создаёт и закрывает сессию.
+- `Depends` asks FastAPI to provide a session;
+- `Session` is used for the type annotation;
+- `select` creates a query;
+- `Application` represents the table;
+- `get_db` creates and closes the session.
 
-### Получение всех заявок
+### Getting All Applications
 
 ```python
 def list_applications(db: Session = Depends(get_db)):
@@ -363,25 +363,25 @@ def list_applications(db: Session = Depends(get_db)):
     }
 ```
 
-FastAPI вызывает `get_db`, получает `db`, затем выполняется запрос к таблице.
+FastAPI calls `get_db`, receives `db`, and then queries the table.
 
-`scalars` извлекает объекты `Application`, а `all` превращает результат в список.
+`scalars` extracts `Application` objects, and `all` converts the result into a list.
 
-### Получение одной заявки
+### Getting One Application
 
 ```python
 application = db.get(Application, application_id)
 ```
 
-Поиск выполняется по первичному ключу `id`.
+The search is performed by the primary key `id`.
 
-Если записи нет, API возвращает:
+If the record does not exist, the API returns:
 
 ```python
 raise HTTPException(status_code=404, detail="Application not found")
 ```
 
-### Создание заявки
+### Creating an Application
 
 ```python
 def create_application(
@@ -394,16 +394,16 @@ def create_application(
     db.refresh(application)
 ```
 
-Порядок действий:
+Steps:
 
-1. `ApplicationCreate` проверяет входной JSON;
-2. `model_dump()` превращает Pydantic-объект в словарь;
-3. `Application(...)` создаёт объект модели SQLAlchemy;
-4. `db.add()` добавляет его в текущую транзакцию;
-5. `db.commit()` сохраняет его в SQLite;
-6. `db.refresh()` загружает сгенерированные `id` и даты.
+1. `ApplicationCreate` validates the input JSON;
+2. `model_dump()` converts the Pydantic object to a dictionary;
+3. `Application(...)` creates a SQLAlchemy model object;
+4. `db.add()` adds it to the current transaction;
+5. `db.commit()` saves it to SQLite;
+6. `db.refresh()` loads the generated `id` and dates.
 
-### Изменение заявки
+### Updating an Application
 
 ```python
 for field, value in payload.model_dump(exclude_unset=True).items():
@@ -411,9 +411,9 @@ for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(application, field, value)
 ```
 
-`exclude_unset=True` позволяет изменить только поля, которые пришли в запросе.
+`exclude_unset=True` allows only fields included in the request to be changed.
 
-Например:
+For example:
 
 ```json
 {
@@ -421,35 +421,35 @@ for field, value in payload.model_dump(exclude_unset=True).items():
 }
 ```
 
-изменит только статус, а остальные поля останутся прежними.
+changes only the status, while the other fields remain unchanged.
 
-После изменения выполняется:
+After the update, run:
 
 ```python
 db.commit()
 db.refresh(application)
 ```
 
-## 10. Полный сценарий создания заявки
+## 10. Complete Application Creation Flow
 
 ```text
-1. Клиент отправляет POST /applications
-2. FastAPI получает JSON
-3. ApplicationCreate проверяет данные
-4. Depends(get_db) создаёт Session
-5. Создаётся объект Application
-6. db.add() добавляет его в транзакцию
-7. db.commit() записывает его в app.db
-8. db.refresh() получает id и даты
-9. API возвращает заявку
-10. get_db закрывает Session
+1. The client sends POST /applications
+2. FastAPI receives JSON
+3. ApplicationCreate validates the data
+4. Depends(get_db) creates a Session
+5. An Application object is created
+6. db.add() adds it to the transaction
+7. db.commit() writes it to app.db
+8. db.refresh() obtains the id and dates
+9. The API returns the application
+10. get_db closes the Session
 ```
 
-После перезапуска сервера запись остаётся, потому что она находится в `app.db`, а не в оперативной памяти Python.
+After the server restarts, the record remains because it is stored in `app.db`, not in Python memory.
 
-## 11. Как проверить работу
+## 11. How to Verify It Works
 
-Запустить приложение из корня проекта:
+Start the application from the project root:
 
 ```powershell
 cd C:\Users\user\Documents\Project
@@ -457,55 +457,55 @@ cd C:\Users\user\Documents\Project
 python -m uvicorn app.main:app --reload
 ```
 
-Открыть Swagger:
+Open Swagger:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-Через `POST /applications` создать заявку:
+Create an application through `POST /applications`:
 
 ```json
 {
   "company": "Google",
   "position": "Python Developer",
   "url": "https://example.com/vacancy",
-  "description": "Backend-разработка на Python",
+    "description": "Backend development in Python",
   "status": "new",
   "source": "manual"
 }
 ```
 
-Затем выполнить `GET /applications` и проверить, что заявка появилась.
+Then run `GET /applications` and verify that the application appears.
 
-После этого остановить сервер через `Ctrl+C`, запустить снова и повторить `GET /applications`. Запись должна сохраниться.
+Then stop the server with `Ctrl+C`, start it again, and repeat `GET /applications`. The record should remain.
 
-## 12. Важное различие между компонентами
+## 12. Important Differences Between Components
 
 ```text
-config.py       знает адрес базы
+config.py       knows the database address
     ↓
-database.py     создаёт engine и Session
+database.py     creates engine and Session
     ↓
-models.py       описывает таблицы
+models.py       defines tables
     ↓
-main.py         запускает создание таблиц
+main.py         starts table creation
     ↓
-applications.py выполняет операции API
+applications.py performs API operations
 ```
 
-- `engine` знает, как подключаться к базе;
-- `Session` выполняет конкретные операции;
-- `Application` описывает структуру таблицы;
-- `db.add`, `db.commit`, `db.get` работают через сессию;
-- FastAPI связывает HTTP-запрос с функцией роутера.
+- `engine` knows how to connect to the database;
+- `Session` performs specific operations;
+- `Application` describes the table structure;
+- `db.add`, `db.commit`, and `db.get` work through the session;
+- FastAPI connects the HTTP request to the router function.
 
-## 13. Что делать дальше
+## 13. What to Do Next
 
-Текущая версия подходит для первого локального этапа. Следующие шаги:
+The current version is suitable for the first local stage. Next steps:
 
-1. Добавить обработку `rollback()` при ошибках.
-2. Создать тесты для всех endpoint-ов.
-3. Подключить Alembic для миграций.
-4. Добавить таблицы компаний, статусов и истории изменений.
-5. Переключить SQLite на PostgreSQL, когда появится необходимость в общей серверной базе.
+1. Add `rollback()` handling for errors.
+2. Create tests for all endpoints.
+3. Add Alembic for migrations.
+4. Add tables for companies, statuses, and change history.
+5. Switch SQLite to PostgreSQL when a shared server database becomes necessary.

@@ -1,16 +1,16 @@
-# План проекта: Job Application Automation Platform
+# Project Plan: Job Application Automation Platform
 
-## Общее направление
+## Overall Direction
 
-Проект должен расти по этапам: сначала базовый рабочий продукт, потом интеграции, затем аналитика и только потом AI/RAG.
+The project should grow in stages: first a basic working product, then integrations, then analytics, and only then AI/RAG.
 
-## 1. Этап 0 — Подготовка и каркас проекта
+## 1. Stage 0 — Project Setup and Skeleton
 
-### Цель
-Сделать базовую структуру, чтобы проект можно было локально запускать и развивать дальше.
+### Goal
+Create a basic structure so the project can be run locally and developed further.
 
-### Что делаем
-- выбрать стек:
+### Tasks
+- choose the stack:
   - Python
   - FastAPI
   - PostgreSQL
@@ -18,219 +18,219 @@
   - Telegram bot
   - Docker Compose
   - pytest
-- создать базовую структуру проекта
-- настроить окружение
-- настроить переменные окружения
-- проверить запуск backend и bot
-- сделать health-check endpoint
+- create the basic project structure
+- configure the environment
+- configure environment variables
+- verify that the backend and bot start
+- create a health-check endpoint
 
-### Результат
-- проект запускается локально
-- есть пустой, но рабочий каркас
-- можно добавлять новые модули без ломки системы
+### Result
+- the project runs locally
+- there is an empty but working skeleton
+- new modules can be added without breaking the system
 
-## 2. Этап 1 — MVP: обработка заявок и Telegram-бот
+## 2. Stage 1 — MVP: Application Processing and Telegram Bot
 
-### Цель
-Сделать минимальную версию, где пользователь может отправлять данные по вакансии и они сохраняются.
+### Goal
+Create a minimum version where users can submit vacancy data and have it saved.
 
-### Что делаем
-- Telegram команды:
+### Tasks
+- Telegram commands:
   - start
   - new vacancy
   - status
   - help
-- форма заявки:
-  - компания
-  - ссылка
-  - должность
-  - описание
-  - статус
-- API для создания и просмотра заявок
-- модель данных для вакансии / заявки / статуса
-- хранение в БД
-- базовые проверки и валидация
+- application form:
+  - company
+  - link
+  - position
+  - description
+  - status
+- API for creating and viewing applications
+- data model for vacancy / application / status
+- database storage
+- basic checks and validation
 
-### Результат
-- бот принимает заявки
-- данные сохраняются в БД
-- есть базовый API
+### Result
+- the bot accepts applications
+- data is saved in the database
+- there is a basic API
 
-## 3. Этап 2 — База данных и бизнес-логика
+## 3. Stage 2 — Database and Business Logic
 
-### Цель
-Сделать нормальную модель данных, чтобы дальше можно было масштабировать.
+### Goal
+Create a proper data model so the project can be scaled later.
 
-### Что делаем
-- проектировать таблицы:
-  - вакансии
-  - компании
-  - заявки
-  - статусы
-  - история изменений
-  - follow-up лог
-- добавить связи между сущностями
-- сделать CRUD-операции
-- добавить репозитории и сервисный слой
-- сделать миграции
-- добавить логирование событий
+### Tasks
+- design tables:
+  - vacancies
+  - companies
+  - applications
+  - statuses
+  - change history
+  - follow-up log
+- add relationships between entities
+- implement CRUD operations
+- add repositories and a service layer
+- create migrations
+- add event logging
 
-### Результат
-- есть нормальная схема данных
-- данные хранятся структурированно
-- проще добавлять аналитические слои и AI
+### Result
+- there is a proper data schema
+- data is stored in a structured way
+- analytics layers and AI are easier to add
 
-## 4. Этап 3 — Синхронизация с Google Sheets и внешними источниками
+## 4. Stage 3 — Synchronization with Google Sheets and External Sources
 
-### Цель
-Подключить внешние инструменты, чтобы данные шли не только в бота, но и в таблицы.
+### Goal
+Connect external tools so data flows not only to the bot but also to spreadsheets.
 
-### Что делаем
-- интеграцию с Google Sheets API
-- экспорт заявок и статусов
-- импорт данных при необходимости
-- обновление статуса после действий
-- нормализация форматов данных
-- защита от повторов и дубликатов
+### Tasks
+- integrate with the Google Sheets API
+- export applications and statuses
+- import data when needed
+- update the status after actions
+- normalize data formats
+- protect against repeats and duplicates
 
-### Результат
-- данные доступны в табличной форме
-- легко делиться с другими участниками
-- удобно вести учёт и аналитику
+### Result
+- data is available in tabular form
+- it is easy to share with other participants
+- tracking and analytics are convenient
 
-## 5. Этап 4 — Подготовка данных для аналитики
+## 5. Stage 4 — Preparing Data for Analytics
 
-### Цель
-Сделать данные “удобными” для отчётов и дальнейшего анализа.
+### Goal
+Make the data convenient for reports and further analysis.
 
-### Что делаем
-- привести данные к единому формату
-- выделить поля:
-  - канал получения
-  - статус заявки
-  - компания
-  - дата
-  - тип ответа
+### Tasks
+- bring the data into a single format
+- identify fields:
+  - acquisition channel
+  - application status
+  - company
+  - date
+  - response type
   - follow-up
-- добавить модель для метрик
-- сделать базовые отчёты
-- подготовить слой для dbt
+- add a model for metrics
+- create basic reports
+- prepare a layer for dbt
 
-### Результат
-- данные готовы для dashboards и BI
-- можно считать конверсии и эффективность
+### Result
+- the data is ready for dashboards and BI
+- conversion rates and effectiveness can be calculated
 
-## 6. Этап 5 — BI, дашборды и метрики
+## 6. Stage 5 — BI, Dashboards, and Metrics
 
-### Цель
-Показать, что проект не просто хранит данные, а помогает принимать решения.
+### Goal
+Show that the project does more than store data: it helps with decision-making.
 
-### Что делаем
-- интеграцию с Metabase
-- отчёты:
-  - количество заявок
-  - статус по компаниям
-  - успешные / неуспешные вакансии
-  - производительность каналов
-  - статистика follow-up
-- визуализация KPI
-- отслеживание процессов
+### Tasks
+- integrate with Metabase
+- reports:
+  - number of applications
+  - status by company
+  - successful / unsuccessful vacancies
+  - channel performance
+  - follow-up statistics
+- visualize KPIs
+- track processes
 
-### Результат
-- понятная аналитика
-- видны слабые места в процессе поиска работы
+### Result
+- clear analytics
+- weaknesses in the job search process are visible
 
-## 7. Этап 6 — RAG и AI-помощник
+## 7. Stage 6 — RAG and AI Assistant
 
-### Цель
-Добавить “умный слой” после того, как уже есть данные и структура.
+### Goal
+Add a “smart layer” after the data and structure are in place.
 
-### Что делаем
-- подключить LangChain
-- настроить ChromaDB
-- хранить:
-  - описания вакансий
-  - сообщения/ответы
-  - исторические заявки
-  - шаблоны follow-up
-  - текстовые документы
-- реализовать RAG:
-  - поиск похожих вакансий
-  - генерация рекомендаций
-  - создание черновиков сообщений
-  - анализ текста заявки
-  - помощь в шаблонах ответа
-- сделать AI-сервисы отдельно от основной логики
+### Tasks
+- connect LangChain
+- configure ChromaDB
+- store:
+  - vacancy descriptions
+  - messages/replies
+  - historical applications
+  - follow-up templates
+  - text documents
+- implement RAG:
+  - search for similar vacancies
+  - generate recommendations
+  - create message drafts
+  - analyze application text
+  - help with reply templates
+- keep AI services separate from the core logic
 
-### Результат
-- проект получает интеллектуальные функции
-- бот может помогать не только хранить данные, но и принимать решения
+### Result
+- the project gains intelligent features
+- the bot can help not only store data but also make decisions
 
-## 8. Этап 7 — Качество, CI/CD, подготовка к продакшену
+## 8. Stage 7 — Quality, CI/CD, and Production Readiness
 
-### Цель
-Сделать проект стабильным и удобным для развития.
+### Goal
+Make the project stable and easy to develop.
 
-### Что делаем
-- тесты
+### Tasks
+- tests
 - linting
 - static analysis
 - GitHub Actions
 - Docker Compose
 - env configuration
-- логирование
+- logging
 - monitoring
-- безопасное хранение секретов
+- secure secret storage
 
-### Результат
-- проект можно развивать командой
-- меньше ошибок
-- проще запускать в разных окружениях
+### Result
+- the project can be developed by a team
+- fewer errors
+- easier startup in different environments
 
-## Рекомендуемая поэтапная логика разработки
+## Recommended Development Sequence
 
-### Месяц 1
-- проектный каркас
+### Month 1
+- project skeleton
 - Telegram bot
 - API
-- БД
-- базовые модели
-- хранение заявок
+- database
+- basic models
+- application storage
 
-### Месяц 2
+### Month 2
 - Google Sheets
-- статусы
-- логика follow-up
-- аналитика
-- базовые отчёты
+- statuses
+- follow-up logic
+- analytics
+- basic reports
 
-### Месяц 3
+### Month 3
 - RAG
 - ChromaDB
 - LangChain
-- AI-подсказки
-- улучшения UX
+- AI suggestions
+- UX improvements
 - CI/CD
 
-## Ключевая идея
+## Key Idea
 
-Не пытайся сразу делать всё:
-- сначала рабочий базовый продукт,
-- потом интеграции,
-- потом аналитику,
-- потом AI.
+Do not try to build everything at once:
+- first a working basic product,
+- then integrations,
+- then analytics,
+- then AI.
 
-Так ты получаешь проект, который:
-- запускается,
-- стабилен,
-- легко расширяется,
-- готов к RAG и аналитике.
+This gives you a project that:
+- runs,
+- is stable,
+- is easy to extend,
+- is ready for RAG and analytics.
 
-## Рекомендация по приоритетам
+## Priority Recommendation
 
-Самый правильный порядок:
-1. Telegram + API + БД
+The recommended order is:
+1. Telegram + API + database
 2. Google Sheets
-3. Метрики / dashboard
+3. Metrics / dashboard
 4. AI / LangChain / ChromaDB
-5. CI/CD и стабилизация
+5. CI/CD and stabilization
