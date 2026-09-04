@@ -1,0 +1,93 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "API: start",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": [
+                "-m",
+                "uvicorn",
+                "app.main:app",
+                "--reload"
+            ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "project"
+            }
+        },
+        {
+            "label": "Bot: start",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": [
+                "-m",
+                "app.bot.main"
+            ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "project"
+            }
+        },
+        {
+            "label": "Project: start API and bot",
+            "dependsOn": [
+                "API: start",
+                "Bot: start"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        },
+        {
+            "label": "GIT: add changes",
+            "type": "process",
+            "command": "git",
+            "args": [
+                "add",
+                ".",
+                ":(exclude)app.db"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "GIT: commit changes",
+            "type": "process",
+            "command": "git",
+            "args": [
+                "commit",
+                "-m",
+                "New commit"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "GIT: push changes",
+            "type": "process",
+            "command": "git",
+            "args": [
+                "push"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "GIT: save and push",
+            "dependsOn": [
+                "GIT: add changes",
+                "GIT: commit changes",
+                "GIT: push changes"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}
