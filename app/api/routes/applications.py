@@ -1,44 +1,32 @@
-from datetime import datetime, timezone
-from typing import Any
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, HTTPException
-
+from app.db.database import get_db
+from app.db.models import Application
 from app.schemas.application import ApplicationCreate, ApplicationUpdate
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
-applications: list[dict[str, Any]] = []
-
-
 @router.get("")
-async def list_applications():
-    return {"applications": applications}
+def list_applications(db: Session = Depends(get_db)):
+    return {"applications": db.scalars(select(Application).order_by(Application.id)).all()}
 
 
 @router.get("/{application_id}")
-async def get_application(application_id: int):
-    for application in applications:
-        if application["id"] == application_id:
-            return application
-    raise HTTPException(status_code=404, detail="Application not found")
+def get_application(application_id: int, db: Session = Depends(get_db)):
+    application = db.get(Application, application_id)
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found")
+    return application
 
 
 @router.post("")
-async def create_application(payload: ApplicationCreate):
-    new_id = len(applications) + 1
-    now = datetime.now(timezone.utc).isoformat()
-    application = {
-        "id": new_id,
-        "company": payload.company,
-        "position": payload.position,
-        "url": payload.url,
-        "description": payload.description,
-        "status": payload.status,
-        "source": payload.source,
-        "created_at": now,
-        "updated_at": now,
-    }
-    applications.append(application)
+def create_application(payload: ApplicationCreate, db: Session = Depends(get_db)):
+    application = Application(**payload.model_dump())
+    db.add(application)
+    db.commit()
+    db.refresh(application)
     return {
         "message": "Application created",
         "application": application,
@@ -46,14 +34,17 @@ async def create_application(payload: ApplicationCreate):
 
 
 @router.patch("/{application_id}")
-async def update_application(application_id: int, payload: ApplicationUpdate):
-    for application in applications:
-        if application["id"] == application_id:
-            for field, value in payload.model_dump(exclude_unset=True).items():
-                if value is not None:
-                    application[field] = value
+def update_application(
+    application_id: int, payload: ApplicationUpdate, db: Session = Depends(get_db)
+):
+    application = db.get(Application, application_id)
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found")
 
-            application["updated_at"] = datetime.now(timezone.utc).isoformat()
-            return application
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        if value is not None:
+            setattr(application, field, value)
 
-    raise HTTPException(status_code=404, detail="Application not found")
+    db.commit()
+    db.refresh(application)
+    return application
