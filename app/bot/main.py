@@ -25,12 +25,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/start - start the bot\n"
         "/help - show help\n"
         "/new_vacancy - create a new vacancy\n"
+        "/edit_vacancy - edit an existing application\n"
         "/cancel - cancel the current dialogue\n"
         "/status - check the status of your applications"
     )
 
 
 COMPANY, POSITION, URL, DESCRIPTION = range(4)
+EDIT_ID, EDIT_FIELD, EDIT_VALUE = range(3)
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -119,6 +121,107 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
+async def edit_vacancy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data.clear()
+    await update.message.reply_text("Enter the application ID to edit:")
+    return EDIT_ID
+
+
+async def get_edit_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        application_id = int(update.message.text.strip())
+        if application_id < 1:
+            raise ValueError
+    except ValueError:
+        await update.message.reply_text("The ID must be a positive number.")
+        return EDIT_ID
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{settings.api_base_url}/applications/{application_id}"
+            )
+            response.raise_for_status()
+    except httpx.HTTPStatusError as error:
+        if error.response.status_code == 404:
+            await update.message.reply_text(
+                "Application with this ID was not found. Enter another ID:"
+            )
+            return EDIT_ID
+        await update.message.reply_text("Could not check the application ID.")
+        return ConversationHandler.END
+    except httpx.HTTPError:
+        await update.message.reply_text(
+            "Could not check the application ID. Make sure FastAPI is running."
+        )
+        return ConversationHandler.END
+
+    context.user_data["application_id"] = application_id
+    await update.message.reply_text(
+        "Which field do you want to edit? Choose one:\n"
+        "company, position, url, description, status"
+    )
+    return EDIT_FIELD
+
+
+async def get_edit_field(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    field = update.message.text.strip().lower()
+    allowed_fields = {"company", "position", "url", "description", "status"}
+    if field not in allowed_fields:
+        await update.message.reply_text(
+            "Unknown field. Choose: company, position, url, description, status."
+        )
+        return EDIT_FIELD
+
+    context.user_data["field"] = field
+    await update.message.reply_text(f"Enter a new value for {field}:")
+    return EDIT_VALUE
+
+
+async def get_edit_value(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    value = update.message.text.strip()
+    if not value:
+        await update.message.reply_text("The new value cannot be empty.")
+        return EDIT_VALUE
+
+    application_id = context.user_data["application_id"]
+    field = context.user_data["field"]
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(
+                f"{settings.api_base_url}/applications/{application_id}",
+                json={field: value},
+            )
+            response.raise_for_status()
+    except httpx.HTTPStatusError as error:
+        if error.response.status_code == 404:
+            message = "Application with this ID was not found."
+        else:
+            message = "Could not update the application."
+        await update.message.reply_text(message)
+        context.user_data.clear()
+        return ConversationHandler.END
+    except httpx.HTTPError:
+        await update.message.reply_text(
+            "Could not update the application. Make sure FastAPI is running."
+        )
+        context.user_data.clear()
+        return ConversationHandler.END
+
+    await update.message.reply_text(
+        f"Application {application_id} was updated: {field}."
+    )
+    context.user_data.clear()
+    return ConversationHandler.END
+
+
+async def cancel_edit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data.clear()
+    await update.message.reply_text("Editing the application was cancelled.")
+    return ConversationHandler.END
+
+
 def main():
     if not settings.telegram_bot_token:
         raise RuntimeError(
@@ -134,6 +237,23 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("status", status_command))
+
+    edit_conversation = ConversationHandler(
+        entry_points=[CommandHandler("edit_vacancy", edit_vacancy)],
+        states={
+            EDIT_ID: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, get_edit_id)
+            ],
+            EDIT_FIELD: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, get_edit_field)
+            ],
+            EDIT_VALUE: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, get_edit_value)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", cancel_edit)],
+    )
+    application.add_handler(edit_conversation)
 
     vacancy_conversation = ConversationHandler(
         entry_points=[CommandHandler("new_vacancy", new_vacancy)],
