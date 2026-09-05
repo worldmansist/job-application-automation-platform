@@ -2,6 +2,26 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Python: create and activate venv",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoExit",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "if (-not (Test-Path '.venv\\Scripts\\python.exe')) { python -m venv .venv }; . .\\.venv\\Scripts\\Activate.ps1; Write-Host 'Virtual environment activated'"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
             "label": "API: start",
             "type": "process",
             "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
